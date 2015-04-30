@@ -1,0 +1,12 @@
+## Interface: 60100
+## Title: Primal_UI_Extra
+## Notes: Various customizations for Primal UI.
+## Dependencies: NinjaKittyCore, NinjaKittyMedia, NinjaKittyUF, PrimalAuras
+## OptionalDeps: SexyMap
+
+core.lua
+tooltips.lua
+minimap.lua
+arena.lua
+alert_frames.lua
+zone_map.lua
