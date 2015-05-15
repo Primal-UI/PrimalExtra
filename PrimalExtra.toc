@@ -1,0 +1,15 @@
+## Interface: 60100
+## Title: |cffff7d0aPrimalExtra|r
+## Notes: Various customizations for PrimalUI.
+## Dependencies: PrimalCore, NinjaKittyMedia, NinjaKittyUF, PrimalAuras
+## OptionalDeps: SexyMap, Chatter
+## Version: 0.1
+
+core.lua
+
+alert_frames.lua
+arena.lua
+chat.lua
+minimap.lua
+tooltips.lua
+zone_map.lua
