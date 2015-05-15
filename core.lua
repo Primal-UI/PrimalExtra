@@ -3,10 +3,21 @@ local addonName, addon = ...
 addon._G = _G
 setfenv(1, addon)
 
---debug = true
-print = function(...)
-  if debug then _G.print(...) end
+debug = true
+
+if debug then
+  print = function(...)
+    _G.print("|cffff7d0a" .. addonName .. "|r:", ...)
+  end
+else
+  print = function() end
 end
+
+------------------------------------------------------------------------------------------------------------------------
+chatFrames = _G.PrimalCore.chatFrames
+------------------------------------------------------------------------------------------------------------------------
+
+onPlayerLogin = {}
 
 local handlerFrame = _G.CreateFrame("Frame")
 
@@ -21,11 +32,9 @@ function handlerFrame:ADDON_LOADED(name)
 
   ----------------------------------------------------------------------------------------------------------------------
   -- Changes to the WorldMapFrame. -------------------------------------------------------------------------------------
-
   _G.WorldMapFrame:SetClampRectInsets(0, 0, 0, 0) -- Allow moving the WorldMapFrame all the way down.
 
-  -- Remove the black bars to the sides of the world map.
-  _G.BlackoutWorld:SetTexture(0, 0, 0, 0)
+  _G.BlackoutWorld:SetTexture(0, 0, 0, 0) -- Remove the black bars to the sides of the world map.
 
   local function polishFullscreenMap()
     _G.SetUIPanelAttribute(_G.WorldMapFrame, "area", "center");
@@ -96,19 +105,6 @@ function handlerFrame:ADDON_LOADED(name)
   end
   ----------------------------------------------------------------------------------------------------------------------
 
-  ----------------------------------------------------------------------------------------------------------------------
-  -- Prevent a new chat tab from being opened when starting a pet battle. Taken from
-  -- http://us.battle.net/wow/en/forum/topic/8568959502
-  do
-    local old = _G.FCFManager_GetNumDedicatedFrames
-    function _G.FCFManager_GetNumDedicatedFrames(...)
-      return _G.select(1, ...) ~= "PET_BATTLE_COMBAT_LOG" and old(...) or 1
-    end
-  end
-  ----------------------------------------------------------------------------------------------------------------------
-
-  _G.DEFAULT_CHATFRAME_ALPHA = 0.0 -- Don't darken chat frames on mouseover.
-
   _G.SLASH_NINJA_KITTY_DUEL1 = "/d"
   function _G.SlashCmdList.NINJA_KITTY_DUEL(msg, editbox)
     _G.StartDuel("target")
@@ -119,119 +115,6 @@ function handlerFrame:ADDON_LOADED(name)
     _G.ReloadUI()
   end
 
-  ----------------------------------------------------------------------------------------------------------------------
-  -- Redirect error messages -------------------------------------------------------------------------------------------
-  do
-    _G.UIErrorsFrame:UnregisterEvent("UI_ERROR_MESSAGE")
-
-    local frame = _G.CreateFrame("Frame")
-    frame:SetScript("OnEvent", function(self, event, ...)
-      return self[event](self, ...)
-    end)
-
-    function frame:UI_ERROR_MESSAGE(message)
-      _G.ChatFrame3:AddMessage(message, 1.0, 0.1, 0.1)
-    end
-
-    frame:RegisterEvent("UI_ERROR_MESSAGE")
-  end
-  ----------------------------------------------------------------------------------------------------------------------
-
-  ----------------------------------------------------------------------------------------------------------------------
-  -- Minimap auto-zoom -------------------------------------------------------------------------------------------------
-  do
-    _G.assert(_G.Minimap)
-    local zoomLevel = 3 -- 0 is the widest possible zoom, Minimap:GetZoomLevels() - 1 the narrowest.
-    local Minimap = _G.Minimap
-    local f = _G.CreateFrame("frame", "minimapZoomerFrame")
-
-    -- The macro conditional 'indoors' doesn't always mean we are using the indoors zoom level and vice versa.
-    -- Based on the function 'MinimapRange:GetIndoors()' from the MinimapRange addon.
-    local function IsIndoors()
-      local currentZoom  = _G.Minimap:GetZoom()
-      local indoorsZoom  = _G.tonumber(_G.GetCVar("minimapInsideZoom")) 
-      local outdoorsZoom = _G.tonumber(_G.GetCVar("minimapZoom"))
-
-      -- If the zoom levels for indoors and outdoors differ, we already detected whether we are inside or outside.
-      if indoorsZoom ~= outdoorsZoom then
-	return indoorsZoom == currentZoom
-      else
-	-- Set the zoom to something different to see what CVar changes. Zoom levels range from 0 to 5, where 0 means
-	-- completely zoomed out.
-	if currentZoom == 0 then
-	  _G.MinimapZoomIn:Click()
-	  isIndoors = _G.tonumber(_G.GetCVar("minimapInsideZoom")) ~= indoorsZoom
-	  _G.MinimapZoomOut:Click()
-	else
-	  _G.MinimapZoomOut:Click()
-	  isIndoors = _G.tonumber(_G.GetCVar("minimapInsideZoom")) ~= indoorsZoom
-	  _G.MinimapZoomIn:Click()
-	end
-	return isIndoors
-      end
-    end
-
-    local total
-    local function onUpdate(self, elapsed)
-      total = total + elapsed
-      if total >= 1 then
-	--if _G.SecureCmdOptionParse("[outdoors]outdoors;indoors") == "outdoors" then
-	if not IsIndoors() then
-	  if Minimap:GetZoom() ~= zoomLevel then
-	    -- Do it like SexyMap b/c it gets confused otherwise; e.g. doesn't let you zoom out when it thinks it's
-	    -- already zoomed out completely. Otherwise we would do Minimap:SetZoom(zoomLevel)
-	    for i = 1, 5 do
-	      _G.MinimapZoomOut:Click()
-	    end
-	    for i = 1, zoomLevel do
-	      _G.MinimapZoomIn:Click()
-	    end
-	  end
-	else -- We are indoors; zoom out completely.
-	  if Minimap:GetZoom() ~= 0 then
-	    for i = 1, 5 do
-	      _G.MinimapZoomOut:Click()
-	    end
-	  end
-	end
-	f:SetScript("OnUpdate", nil)
-      end
-    end
-
-    -- Fires when the minimap zoom type changes. The client stores separate zoom level settings for both indoor and
-    -- outdoor areas; this event fires so that the minimap's zoom level can be changed when the player moves between
-    -- such areas. It does not fire when directly setting the minimap's zoom level
-    -- (http://wowprogramming.com/docs/events/MINIMAP_UPDATE_ZOOM).
-    function f:MINIMAP_UPDATE_ZOOM()
-      total = 1
-      f:SetScript("OnUpdate", onUpdate)
-    end
-
-    function f:PLAYER_ENTERING_WORLD()
-      total = 1
-      f:SetScript("OnUpdate", onUpdate)
-    end
-
-    --[[
-    Minimap:HookScript("OnEnter", function(self, motion)
-      f:SetScript("OnUpdate", nil)
-    end)
-
-    Minimap:HookScript("OnLeave", function(self, motion)
-      total = 0
-      f:SetScript("OnUpdate", onUpdate)
-    end)
-    --]]
-
-    f:SetScript("OnEvent", function(self, event, ...)
-      return self[event] and self[event](self, ...)
-    end)
-
-    f:RegisterEvent("MINIMAP_UPDATE_ZOOM")
-    f:RegisterEvent("PLAYER_ENTERING_WORLD")
-  end
-  ----------------------------------------------------------------------------------------------------------------------
-
   handlerFrame:RegisterEvent("PLAYER_LOGIN")
   handlerFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
@@ -239,7 +122,7 @@ function handlerFrame:ADDON_LOADED(name)
   --BuffTimer1:SetScript("OnShow",BuffTimer1.Hide)
 
   -- I was experimenting with these bindings with the left and right mouse buttons bound to arrow keys and side buttons
-  -- (notmally BUTTON4 and BUTTON5 to WoW) being used as left and right mouse buttons. It sucked.
+  -- (notmally BUTTON4 and BUTTON5 to WoW) being used as left and right mouse buttons.  It sucked.
   --SetBinding("LEFT", "STRAFELEFT")
   --SetBinding("RIGHT", "STRAFERIGHT")
   --SetBinding("BUTTON2", "INTERACTMOUSEOVER") -- Could also use TURNORACTION or INTERACTTARGET.
@@ -255,34 +138,9 @@ function handlerFrame:ADDON_LOADED(name)
 end
 
 function handlerFrame:PLAYER_LOGIN()
-  --[[
-  -- Get rid of some messages about raid members choosing a role. Those don't seem to have any message group and thus
-  -- can't be filtered normally.
-
-  -- "%s is now %s." (ROLE_CHANGED_INFORM) and "%s is now %s. (Changed by %s.)"
-  -- (ROLE_CHANGED_INFORM_WITH_SOURCE) type messages.
-  -- See http://wowprogramming.com/utils/xmlbrowser/live/FrameXML/RolePoll.lua and
-  -- http://wowprogramming.com/utils/xmlbrowser/test/FrameXML/GlobalStrings.lua
-  _G.assert(_G.RoleChangedFrame)
-  _G.RoleChangedFrame:UnregisterEvent("ROLE_CHANGED_INFORM")
-
-  -- "%s has chosen: %s" type messages (LFG_ROLE_CHECK_ROLE_CHOSEN).
-  -- http://wowprogramming.com/utils/xmlbrowser/live/FrameXML/LFGFrame.lua
-  _G.assert(_G.LFGEventFrame)
-  _G.RoleChangedFrame:UnregisterEvent("LFG_ROLE_CHECK_ROLE_CHOSEN")
-  --]]
-
-  --[[
-  _G.ChatFrame_AddMessageEventFilter("CHAT_MSG_ADDON", function(self, event, message)
-    print(event .. ": " .. message)
-    return false
-  end)
-  --]]
-
-  -- Switch away from ChatFrame1 since it gets spammed by addons and messages that Blizzard failed to assign a chat
-  -- group to.
-  _G.assert(_G.ChatFrame6Tab)
-  _G.ChatFrame6Tab:Click()
+  for i = 1, #onPlayerLogin do
+    onPlayerLogin[i]()
+  end
 end
 
 local function ToggleWorldStateAlwaysUpFrame()
@@ -314,15 +172,8 @@ function handlerFrame:PLAYER_ENTERING_WORLD()
   -- Changes to the Bags. ----------------------------------------------------------------------------------------------
 
   --_G.CONTAINER_OFFSET_Y = 25
-
   _G.UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_Y = { baseY = 25, yOffset = 0, bottomEither = actionBarOffset,
     isVar = "yAxis" }
-
-  --[[
-  _G.C_Timer.After(1, function()
-    _G.CONTAINER_OFFSET_Y = 25
-  end)
-  ]]
 
   -- wowprogramming.com/utils/xmlbrowser/test/FrameXML/UIParent.lua
   -- wowprogramming.com/utils/xmlbrowser/test/FrameXML/ContainerFrame.lua
@@ -376,6 +227,7 @@ function handlerFrame:PLAYER_ENTERING_WORLD()
   -- See AddOns/Blizzard_BattlefieldMinimap/Blizzard_BattlefieldMinimap.lua
   ----------------------------------------------------------------------------------------------------------------------
 
+  -- TODO: comment or remove this.
   ----------------------------------------------------------------------------------------------------------------------
   local chatTypeGroups = {"SYSTEM", "BN_INLINE_TOAST_ALERT"}
   for _, chatTypeGroup in _G.ipairs(chatTypeGroups) do
@@ -397,9 +249,8 @@ function handlerFrame:PLAYER_ENTERING_WORLD()
   ----------------------------------------------------------------------------------------------------------------------
 end
 
--- For use in macros.
-function _G.NKPrint(message)
-  -- This is how to send messages to MikSBT. See LibSink-2.0.
+function _G.NKPrint(message) -- For use in macros.
+  -- This is how to send messages to MikSBT.  See LibSink-2.0.
   _G.MikSBT.DisplayMessage(message, _G.MikSBT.DISPLAYTYPE_NOTIFICATION, false, 255, 255, 255, nil, "Ubuntu Medium", 2)
 end
 

@@ -40,14 +40,27 @@ end
 ]]
 
 function frame:ADDON_LOADED(name)
-  -- Blizzard_BattlefieldMinimap is LoadOnDemand.
-  if name ~= "Blizzard_BattlefieldMinimap" then return end
+  local continue = (name == "Blizzard_BattlefieldMinimap") or
+                   (name == addonName and _G.IsAddOnLoaded("Blizzard_BattlefieldMinimap"))
+
+  if not continue then return end
 
   self:UnregisterEvent("ADDON_LOADED")
+
+  --_G.BATTLEFIELD_TAB_SHOW_DELAY = 2147483647 -- (2^31 - 1). It won't fade in for a long time.
+  _G.BATTLEFIELD_TAB_SHOW_DELAY = 0
+  _G.BATTLEFIELD_TAB_FADE_TIME = 0
+  _G.DEFAULT_BATTLEFIELD_TAB_ALPHA = 1
+  _G.BATTLEFIELD_MINIMAP_UPDATE_RATE = 0.02
 
   _G.BattlefieldMinimapBackground:Hide()
   _G.BattlefieldMinimapCorner:Hide()
   _G.BattlefieldMinimapCloseButton:Hide()
+
+  _G.BattlefieldMinimapTabLeft:Hide()
+  _G.BattlefieldMinimapTabMiddle:Hide()
+  _G.BattlefieldMinimapTabRight:Hide()
+  _G.select(5, _G.BattlefieldMinimapTab:GetRegions()):Hide()
 
   --[[
   local backdrop = {
@@ -88,7 +101,7 @@ function frame:ADDON_LOADED(name)
   borderLeft:SetPoint("TOPLEFT", 0, 0)
   borderLeft:SetPoint("BOTTOMLEFT", 0, 4)
 
-  --_G.BattlefieldMinimap:SetScale(1.5)
+  --_G.BattlefieldMinimap:SetScale(2)
 
   self:RegisterEvent("GROUP_ROSTER_UPDATE")
 

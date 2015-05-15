@@ -14,7 +14,7 @@ end)
 function frame:ADDON_LOADED(name)
   -- It's not guaranteed that the first ADDON_LOADED event we see is for this addon. It's possible that this file is
   -- loaded and we get here in response to a different addon having finished loading.
-  if name ~= addOnName then return end
+  if name ~= addonName then return end
 
   self:UnregisterEvent("ADDON_LOADED")
 
