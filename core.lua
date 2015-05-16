@@ -17,11 +17,13 @@ end
 chatFrames = _G.PrimalCore.chatFrames
 ------------------------------------------------------------------------------------------------------------------------
 
+onAddonLoaded = {}
 onPlayerLogin = {}
 
 local handlerFrame = _G.CreateFrame("Frame")
 
 handlerFrame:SetScript("OnEvent", function(self, event, ...)
+  --return self[event](self, ...)
   return self[event] and self[event](self, ...)
 end)
 
@@ -134,6 +136,10 @@ function handlerFrame:ADDON_LOADED(name)
   --frame:RegisterForClicks("AnyDown")
   --SetBindingClick("`", "NutsSecureClickHandler")
 
+  for i = 1, #onAddonLoaded do
+    onAddonLoaded[i]()
+  end
+
   self.ADDON_LOADED = nil
 end
 
@@ -210,9 +216,9 @@ function handlerFrame:PLAYER_ENTERING_WORLD()
       if _G.GetCVar("showBattlefieldMinimap") == "0" then
 	-- http://wowprogramming.com/utils/xmlbrowser/test/FrameXML/WorldMapFrame.lua
 	if not _G.BattlefieldMinimap then
-	  _G.BattlefieldMinimap_LoadUI();
+	  _G.BattlefieldMinimap_LoadUI()
 	end
-	_G.SetCVar("showBattlefieldMinimap", "1");
+	_G.SetCVar("showBattlefieldMinimap", "1")
 	_G.BattlefieldMinimap:Show()
 	_G.WorldMapZoneMinimapDropDown_Update()
       end

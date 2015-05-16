@@ -126,7 +126,7 @@ function frame:ADDON_LOADED(name)
       elseif _G.type(tooltip) == "table" then
         restyleTooltip(tooltip)
       else
-        _G.error("Failed to restyle tooltip:", tooltip)
+        _G.error("Failed to restyle tooltip: " .. tooltip)
       end
     end
 
