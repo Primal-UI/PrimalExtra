@@ -107,14 +107,19 @@ function handlerFrame:ADDON_LOADED(name)
   end
   ----------------------------------------------------------------------------------------------------------------------
 
-  _G.SLASH_NINJA_KITTY_DUEL1 = "/d"
-  function _G.SlashCmdList.NINJA_KITTY_DUEL(msg, editbox)
+  _G.SLASH_PRIMAL_EXTRA_DUEL1 = "/d"
+  function _G.SlashCmdList.PRIMAL_EXTRA_DUEL(msg, editbox)
     _G.StartDuel("target")
   end
 
-  _G.SLASH_NINJA_KITTY_RELOAD1 = "/rl"
-  function _G.SlashCmdList.NINJA_KITTY_RELOAD(msg, editbox)
+  _G.SLASH_PRIMAL_EXTRA_RELOAD1 = "/rl"
+  function _G.SlashCmdList.PRIMAL_EXTRA_RELOAD(msg, editbox)
     _G.ReloadUI()
+  end
+
+  _G.SLASH_PRIMAL_EXTRA_LOGOUT1 = "/log"
+  function _G.SlashCmdList.PRIMAL_EXTRA_LOGOUT(msg, editbox)
+    _G.Logout()
   end
 
   handlerFrame:RegisterEvent("PLAYER_LOGIN")

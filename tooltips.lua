@@ -316,4 +316,4 @@ end
 
 frame:RegisterEvent("ADDON_LOADED")
 
--- vim: tw=120 sw=2 et
+-- vim: tw=120 sts=2 sw=2 et

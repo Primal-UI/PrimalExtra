@@ -10,13 +10,15 @@ setfenv(1, addon)
 -- money loot messages.  This should also prevent the creation of a lot of frames as only MoneyWonAlertFrame1 is always
 -- created and this function will create an extra unnamed frame when there is no unused frame in MONEY_WON_ALERT_FRAMES.
 _G.MoneyWonAlertFrame_ShowAlert = function(amount)
+  print("MoneyWonAlertFrame_ShowAlert() blocked:", amount)
+
   local gold   = _G.math.floor(amount / 10000)
   local silver = _G.math.floor((amount - 10000 * gold) / 100)
   local copper = amount % 100
 
-  local goldString = gold > 0 and _G.string.format(_G.GOLD_AMOUNT, gold) .. (silver + copper > 0 and ", " or "") or ""
-  local silverString = silver > 0 and _G.string.format(_G.SILVER_AMOUNT, silver) .. (copper > 0 and ", " or "") or ""
-  local copperString = copper > 0 and _G.string.format(_G.COPPER_AMOUNT, copper) or ""
+  local goldString   = gold   > 0 and _G.string.format(_G.GOLD_AMOUNT, gold) or ""
+  local silverString = silver > 0 and (gold > 0 and ", " or "") .. _G.string.format(_G.SILVER_AMOUNT, silver) or ""
+  local copperString = copper > 0 and _G.string.format(", " .. _G.COPPER_AMOUNT, copper) or ""
 
   local message = _G.string.format(_G.YOU_LOOT_MONEY .. "%s%s%s", "", goldString, silverString, copperString)
 
@@ -32,20 +34,80 @@ end
 -- http://wowprogramming.com/utils/xmlbrowser/test/FrameXML/AlertFrames.lua
 ------------------------------------------------------------------------------------------------------------------------
 
-_G.LootWonAlertFrame_ShowAlert = function(...)
-  -- TODO.  Display message styled after normal loot message.
-  print(...)
+local LOOT_SOURCE_GARRISON_CACHE = 10 -- In wowprogramming.com/utils/xmlbrowser/test/FrameXML/AlertFrames.lua
+
+_G.LootWonAlertFrame_ShowAlert = function(itemLink, quantity, rollType, roll, specId, isCurrency, showFactionBg, source)
+  print("LootWonAlertFrame_ShowAlert() blocked:", itemLink, quantity, rollType, roll, specId, isCurrency, showFactionBg,
+    source)
+
+  _G.assert(itemLink, quantity, isCurrency)
+
+  -- I think there might actually always be a chat message for this type of alert frame already.  TODO: confirm.
+  --[=[
+
+  -- There already is a chat message when looting the Garrison Cache.  There are probably other instances where a
+  -- chat message is already added by default.
+  if source and source == LOOT_SOURCE_GARRISON_CACHE then return end
+
+  local message
+
+  if isCurrency then
+    if quantity == 1 then
+      message = _G.string.format(_G.CURRENCY_GAINED, itemLink)
+    else
+      message = _G.string.format(_G.CURRENCY_GAINED_MULTIPLE, itemLink, quantity)
+    end
+    local info = _G.ChatTypeInfo["CURRENCY"]
+    for i = 1, _G.NUM_CHAT_WINDOWS do
+      local chatFrame = _G["ChatFrame" .. i]
+      if chatFrame:IsEventRegistered("CHAT_MSG_CURRENCY") then
+        chatFrame:AddMessage(message, info.r, info.g, info.b, info.id)
+      end
+    end
+  -- I think there always is a chat message for items.
+  --[[
+  else
+    if quantity == 1 then
+      message = _G.string.format(_G.LOOT_ITEM_PUSHED_SELF, itemLink)
+    else
+      message = _G.string.format(_G.LOOT_ITEM_PUSHED_SELF_MULTIPLE, itemLink, quantity)
+    end
+  --]]
+  end
+  --]=]
 end
 
-_G.LootUpgradeFrame_ShowAlert = function() end
+_G.LootUpgradeFrame_ShowAlert = function()
+  -- Seems completely useless.  I don't feel like there has to be a chat message to replace it.
+  print("LootWonAlertFrame_ShowAlert() blocked")
+end
+
+_G.DigsiteCompleteToastFrame_ShowAlert = function(researchBranchId)
+  -- Useless.
+end
 
 _G.AchievementAlertFrame_ShowAlert = function(...)
-  print(...)
+  -- The normal achievement notification in chat is enough.
+end
+
+-- Replacement for criteria alert frames.  TODO: polish.
+_G.CriteriaAlertFrame_ShowAlert = function(achievementId, criteriaId)
+  print("CriteriaAlertFrame_ShowAlert() blocked:", achievementId, criteriaId)
+
+  local criteriaString = _G.GetAchievementCriteriaInfoByID(achievementId, criteriaId)
+
+  local info = _G.ChatTypeInfo["ACHIEVEMENT"]
+  for i = 1, _G.NUM_CHAT_WINDOWS do
+    local chatFrame = _G["ChatFrame" .. i]
+    if chatFrame:IsEventRegistered("CHAT_MSG_ACHIEVEMENT") then
+      chatFrame:AddMessage(criteriaString, info.r, info.g, info.b, info.id)
+    end
+  end
 end
 
 _G.AlertFrame:UnregisterEvent("GARRISON_BUILDING_ACTIVATABLE") -- GarrisonBuildingAlertFrame
 _G.AlertFrame:UnregisterEvent("GARRISON_MISSION_FINISHED") -- GarrisonMissionAlertFrame
---_G.AlertFrame:UnregisterEvent("GARRISON_FOLLOWER_ADDED") -- GarrisonFollowerAlertFrame
+_G.AlertFrame:UnregisterEvent("GARRISON_FOLLOWER_ADDED") -- GarrisonFollowerAlertFrame
 
 local frame = _G.CreateFrame("Frame")
 

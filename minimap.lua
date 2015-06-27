@@ -127,7 +127,7 @@ function frame:ADDON_LOADED(name)
         --Minimap:SetAlpha(total)
       else
         --_G.Minimap:SetAlpha(1)
-        _G.Minimap:SetMaskTexture("Interface\\AddOns\\NinjaKittyMedia\\minimap\\shapes\\ninja_kitty_blank.tga")
+        _G.Minimap:SetMaskTexture("Interface\\AddOns\\PrimalMedia\\minimap\\shapes\\ninja_kitty_blank.tga")
         f:SetScript("OnUpdate", nil)
       end
     end
@@ -149,7 +149,7 @@ function frame:ADDON_LOADED(name)
     local shown = false
     _G.toggleMinimapBG = function()
       if shown then
-        _G.Minimap:SetMaskTexture("Interface\\AddOns\\NinjaKittyMedia\\minimap\\shapes\\ninja_kitty_blank.tga")
+        _G.Minimap:SetMaskTexture("Interface\\AddOns\\PrimalMedia\\minimap\\shapes\\ninja_kitty_blank.tga")
       else
         _G.Minimap:SetMaskTexture("Interface\\AddOns\\SexyMap\\shapes\\circle.tga")
       end
