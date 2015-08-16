@@ -91,8 +91,8 @@ _G.AchievementAlertFrame_ShowAlert = function(...)
 end
 
 -- Replacement for criteria alert frames.  TODO: polish.
-_G.CriteriaAlertFrame_ShowAlert = function(achievementId, criteriaId)
-  print("CriteriaAlertFrame_ShowAlert() blocked:", achievementId, criteriaId)
+_G.CriteriaAlertFrame_ShowAlert = function(achievementId, criteriaId, ...)
+  print("CriteriaAlertFrame_ShowAlert() blocked:", achievementId, criteriaId, ...)
 
   local criteriaString = _G.GetAchievementCriteriaInfoByID(achievementId, criteriaId)
 

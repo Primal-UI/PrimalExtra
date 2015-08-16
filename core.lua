@@ -122,6 +122,10 @@ function handlerFrame:ADDON_LOADED(name)
     _G.Logout()
   end
 
+  -- http://wowprogramming.com/utils/xmlbrowser/test/FrameXML/ChatFrame.lua
+  _G.SLASH_PRIMAL_EXTRA_CALENDAR1 = "/cal"
+  _G.SlashCmdList.PRIMAL_EXTRA_CALENDAR = _G.SlashCmdList.CALENDAR
+
   handlerFrame:RegisterEvent("PLAYER_LOGIN")
   handlerFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 

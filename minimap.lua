@@ -162,8 +162,7 @@ function frame:ADDON_LOADED(name)
 end
 
 function frame:PLAYER_LOGIN()
-  -- Allow SexyMap to handle PLAYER_LOGIN.
-  _G.C_Timer.After(0.001, function()
+  _G.C_Timer.After(.001, function() -- Allow SexyMap to respond to PLAYER_LOGIN first.
     local script = _G.Minimap:GetScript("OnMouseUp")
     _G.Minimap:SetScript("OnMouseUp", function(self, button)
       if button == "RightButton" then
@@ -171,7 +170,11 @@ function frame:PLAYER_LOGIN()
       elseif button == "MiddleButton" then
         _G.RunBinding("TOGGLEBATTLEFIELDMINIMAP")
       elseif button == "Button4" then
-        -- ...
+        _G.SetMapToCurrentZone()
+        local x, y = _G.GetPlayerMapPosition("player")
+        local subZone = _G.GetSubZoneText()
+        if subZone ~= "" then subZone = subZone .. " - " end
+        _G.ChatFrame10:AddMessage(_G.format("%s%s: (%.1f, %.1f)", subZone, _G.GetZoneText(), x * 100, y * 100))
       elseif button == "Button5" then
         -- ...
       else
