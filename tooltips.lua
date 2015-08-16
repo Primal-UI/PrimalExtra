@@ -2,38 +2,34 @@ local addonName, addon = ...
 
 setfenv(1, addon)
 
+local plainBackdrop = {
+  bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+  tile = false,
+  insets = { left = 2, right = 2, top = 2, bottom = 2 }
+}
+-- wowprogramming.com/utils/xmlbrowser/test/FrameXML/ItemRef.xml
+
 -- For GameTooltipTemplate based and other tooltips.
-local restyleTooltip
-
-do
-  local backdrop = {
-    bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-    tile = false,
-    insets = { left = 2, right = 2, top = 2, bottom = 2 }
-  }
-  -- wowprogramming.com/utils/xmlbrowser/test/FrameXML/ItemRef.xml
-
-  restyleTooltip = function(tooltip)
-    tooltip:SetBackdrop(backdrop)
-    tooltip:SetBackdropColor(0, 0, 0, .75)
-    local originalSetBackdrop = tooltip.SetBackdrop
-    tooltip.SetBackdrop = function(self, ...)
-      originalSetBackdrop(self, backdrop)
-    end
-    local originalSetBackdropColor = tooltip.SetBackdropColor
-    tooltip.SetBackdropColor = function(self, ...)
-      originalSetBackdropColor(self, 0, 0, 0, .75)
-    end
-    -- Don't ValidateFramePosition().  See wowprogramming.com/utils/xmlbrowser/test/FrameXML/ItemRef.xml
-    if tooltip:GetScript("OnDragStop") then
-      tooltip:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-        if _G.IsModifiedClick("COMPAREITEMS") then
-          _G.GameTooltip_ShowCompareItem(self, true)
-          self.comparing = true;
-        end
-      end)
-    end
+local function restyleTooltip(tooltip)
+  tooltip:SetBackdrop(plainBackdrop)
+  tooltip:SetBackdropColor(0, 0, 0, .75)
+  local originalSetBackdrop = tooltip.SetBackdrop
+  tooltip.SetBackdrop = function(self, ...)
+    originalSetBackdrop(self, plainBackdrop)
+  end
+  local originalSetBackdropColor = tooltip.SetBackdropColor
+  tooltip.SetBackdropColor = function(self, ...)
+    originalSetBackdropColor(self, 0, 0, 0, .75)
+  end
+  -- Don't ValidateFramePosition().  See wowprogramming.com/utils/xmlbrowser/test/FrameXML/ItemRef.xml
+  if tooltip:GetScript("OnDragStop") then
+    tooltip:SetScript("OnDragStop", function(self)
+      self:StopMovingOrSizing()
+      if _G.IsModifiedClick("COMPAREITEMS") then
+        _G.GameTooltip_ShowCompareItem(self, true)
+        self.comparing = true;
+      end
+    end)
   end
 end
 
@@ -227,7 +223,7 @@ function frame:ADDON_LOADED(name)
         region:Hide()
       end
     end
-    self:SetBackdrop(backdrop)
+    self:SetBackdrop(plainBackdrop)
     self:SetBackdropColor(0, 0, 0, .75)
   end
 
@@ -242,10 +238,10 @@ function frame:ADDON_LOADED(name)
   -- Restyle FrameStackTooltip.
   local function StyleFrameStackTooltip()
     _G.FrameStackTooltip:HookScript("OnShow", function()
-      _G.FrameStackTooltip:SetBackdrop(backdrop)
+      _G.FrameStackTooltip:SetBackdrop(plainBackdrop)
       _G.FrameStackTooltip:SetBackdropColor(0, 0, 0, .75)
     end)
-    _G.FrameStackTooltip:SetBackdrop(backdrop)
+    _G.FrameStackTooltip:SetBackdrop(plainBackdrop)
     _G.FrameStackTooltip:SetBackdropColor(0, 0, 0, .75)
     StyleFrameStackTooltip = function() end
   end
