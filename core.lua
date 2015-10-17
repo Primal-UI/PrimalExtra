@@ -3,14 +3,8 @@ local addonName, addon = ...
 addon._G = _G
 setfenv(1, addon)
 
-debug = true
-
-if debug then
-  print = function(...)
-    _G.print("|cffff7d0a" .. addonName .. "|r:", ...)
-  end
-else
-  print = function() end
+print = function(...)
+  _G.print("|cffff7d0a" .. addonName .. "|r:", ...)
 end
 
 ------------------------------------------------------------------------------------------------------------------------

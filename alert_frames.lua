@@ -90,20 +90,25 @@ _G.AchievementAlertFrame_ShowAlert = function(...)
   -- The normal achievement notification in chat is enough.
 end
 
--- Replacement for criteria alert frames.  TODO: polish.
+-- Replacement for criteria alert frames.  TODO: Test.
 _G.CriteriaAlertFrame_ShowAlert = function(achievementId, criteriaId, ...)
-  print("CriteriaAlertFrame_ShowAlert() blocked:", achievementId, criteriaId, ...)
+  --print("CriteriaAlertFrame_ShowAlert() blocked:", achievementId, criteriaId, ...)
 
-  local criteriaString = _G.GetAchievementCriteriaInfoByID(achievementId, criteriaId)
+  -- Apparently the second argument passed to this function already is the criteria string now.
+  local criteriaString = criteriaId
+
+  --local criteriaString = _G.GetAchievementCriteriaInfoByID(achievementId, criteriaId)
 
   local info = _G.ChatTypeInfo["ACHIEVEMENT"]
   for i = 1, _G.NUM_CHAT_WINDOWS do
     local chatFrame = _G["ChatFrame" .. i]
     if chatFrame:IsEventRegistered("CHAT_MSG_ACHIEVEMENT") then
-      chatFrame:AddMessage(criteriaString, info.r, info.g, info.b, info.id)
+      chatFrame:AddMessage("Achievement progress: " .. _G.GetAchievementLink(achievementId) .. ": " .. criteriaString,
+        info.r, info.g, info.b, info.id)
     end
   end
 end
+-- github.com/tekkub/wow-ui-source/blob/ptr/FrameXML/AlertFrames.lua
 
 _G.AlertFrame:UnregisterEvent("GARRISON_BUILDING_ACTIVATABLE") -- GarrisonBuildingAlertFrame
 _G.AlertFrame:UnregisterEvent("GARRISON_MISSION_FINISHED") -- GarrisonMissionAlertFrame

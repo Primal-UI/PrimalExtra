@@ -13,6 +13,25 @@ function frame:ADDON_LOADED(name)
 
   self:UnregisterEvent("ADDON_LOADED")
 
+  do
+    local format = _G.format
+    local GetPlayerMapPosition = _G.GetPlayerMapPosition
+    local function updateCoords()
+      local x, y = GetPlayerMapPosition("player")
+      _G.MinimapZoneText:SetText(format("%.1f, %.1f", x * 100, y * 100))
+    end
+    _G.MinimapCluster:HookScript("OnEvent", function()
+      updateCoords()
+      -- SexyMap sets the width to max(MinimapZoneText:GetStringWidth() * 1.3, mod.db.width or 0).  We just invalidated
+      -- The value of MinimapZoneText:GetStringWidth() it used but with a high enough value of mod.db.width this should
+      -- never be a problem.
+      _G.MinimapZoneTextButton:SetWidth(_G.MinimapZoneText:GetStringWidth())
+    end)
+    _G.C_Timer.NewTicker(.1, updateCoords)
+  end
+  -- wowprogramming.com/utils/xmlbrowser/test/FrameXML/Minimap.lua
+  -- wowprogramming.com/utils/xmlbrowser/test/FrameXML/Minimap.xml
+
   ----------------------------------------------------------------------------------------------------------------------
   -- auto-zoom ---------------------------------------------------------------------------------------------------------
   do
@@ -170,11 +189,13 @@ function frame:PLAYER_LOGIN()
       elseif button == "MiddleButton" then
         _G.RunBinding("TOGGLEBATTLEFIELDMINIMAP")
       elseif button == "Button4" then
+        -- TODO: toggle the coordinate text between being always visible and being visible while the cursor is hovering
+        -- over the minimap.  See AddOns/SexyMap/ZoneText.lua.
         _G.SetMapToCurrentZone()
         local x, y = _G.GetPlayerMapPosition("player")
         local subZone = _G.GetSubZoneText()
         if subZone ~= "" then subZone = subZone .. " - " end
-        _G.ChatFrame10:AddMessage(_G.format("%s%s: (%.1f, %.1f)", subZone, _G.GetZoneText(), x * 100, y * 100))
+        _G.ChatFrame10:AddMessage(_G.format("%s%s (%.1f, %.1f)", subZone, _G.GetZoneText(), x * 100, y * 100))
       elseif button == "Button5" then
         -- ...
       else

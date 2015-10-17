@@ -19,6 +19,7 @@ function frame:PLAYER_ENTERING_WORLD()
   local _, instanceType = _G.IsInInstance()
   if instanceType == "arena" then
     _G.PrimalUnitFrames.disableUnitFrame(_G.NKTargetFrame)
+    _G.PrimalUnitFrames.disableCastFrame(_G.NKTargetCastFrame)
     _G.PrimalUnitFrames.disableUnitFrame(_G.NKFocusFrame)
     _G.PrimalUnitFrames.disableCastFrame(_G.NKFocusCastFrame)
     _G.NKArena1Frame:ClearAllPoints()
@@ -27,9 +28,11 @@ function frame:PLAYER_ENTERING_WORLD()
     _G.NKAOtherTargetAuras:ClearAllPoints()
     _G.NKAOtherTargetAuras:SetPoint(_G.unpack(newOtherTargetAurasPoint))
     _G.NKAOtherTargetAuras:SetParent(_G.NKAltTargetFrame)
-    _G.NKALongTargetBuffs:SetParent(_G.NKAltTargetFrame)
+    --_G.NKALongTargetBuffs:SetParent(_G.NKAltTargetFrame)
+    --_G.NKATargetDebuffs:SetParent(_G.NKAltTargetFrame)
   else
     _G.PrimalUnitFrames.enableUnitFrame(_G.NKTargetFrame)
+    _G.PrimalUnitFrames.enableCastFrame(_G.NKTargetCastFrame)
     _G.PrimalUnitFrames.enableUnitFrame(_G.NKFocusFrame)
     _G.PrimalUnitFrames.enableCastFrame(_G.NKFocusCastFrame)
     _G.NKArena1Frame:ClearAllPoints()
@@ -38,7 +41,8 @@ function frame:PLAYER_ENTERING_WORLD()
     _G.NKAOtherTargetAuras:ClearAllPoints()
     _G.NKAOtherTargetAuras:SetPoint(_G.unpack(otherTargetAurasPoint))
     _G.NKAOtherTargetAuras:SetParent(otherTargetAurasParent)
-    _G.NKALongTargetBuffs:SetParent(otherTargetAurasParent)
+    --_G.NKALongTargetBuffs:SetParent(otherTargetAurasParent)
+    --_G.NKATargetDebuffs:SetParent(otherTargetAurasParent)
   end
 end
 
@@ -85,4 +89,4 @@ do
 end
 --]==]
 
--- vim: tw=120 sw=2 et
+-- vim: tw=120 sts=2 sw=2 et

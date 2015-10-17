@@ -8,7 +8,6 @@
 core.lua
 
 alert_frames.lua
-arena.lua
 chat.lua
 minimap.lua
 tooltips.lua
